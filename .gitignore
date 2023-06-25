@@ -6,7 +6,6 @@ out
 script32
 sharecfgdata
 spine
-test
 *.ini
 *.json
 *.spec
