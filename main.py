@@ -1,19 +1,21 @@
 import os
-import pprint
 from src.AssetManager import AssetManager
 from src.DecodeHelper import DecodeHelper
 from src.EncodeHelper import EncodeHelper
 import shutil
+from src.utility import raw_name
 
+asset_manager = AssetManager()
+decoder = DecodeHelper(asset_manager)
+encoder = EncodeHelper(asset_manager)
+num_deps = len(asset_manager.deps)
 
 def outputPng(file:str):
     __src_dir = file
     filename = os.path.basename(__src_dir)
     __dst_dir = f'test/output/{filename}'
     os.makedirs(__dst_dir, exist_ok=True)
-    asset_manager = AssetManager()
-    decoder = DecodeHelper(asset_manager)
-    encoder = EncodeHelper(asset_manager)
+
     asset_manager.analyze(__src_dir)
     print(asset_manager.metas)
     print("[INFO] Dependencies:", asset_manager.deps)
@@ -28,6 +30,7 @@ def outputPng(file:str):
     if os.path.exists(path):
         asset_manager.extract(x, path, True)
     decoder.exec(__dst_dir + "/")
+    return __dst_dir
 def movFile():
   __src_dir = 'test/painting'
   __dst_dir = 'test'
@@ -45,9 +48,23 @@ def movFile():
         moved_files.append(dst_path)
   return moved_files
 
+def importPng(src):
+  paintingSrc = src+'/painting'
+  paintingFiles = []
+  for file in os.listdir(paintingSrc):
+     paintingFiles.append(os.path.join(paintingSrc, file))
+  if paintingFiles:
+    print("[INFO] Paintings:")
+    [print("      ", _) for _ in paintingFiles]
 
-moved_files=movFile()
+  #     for i in range(num_deps):
+  #         name = raw_name(tReplacer.item(i, 0).text()).lower()
+  #         match = [_ for _ in paintingFiles if name in _]
+  #         if len(match) > 0:
+  #             tReplacer.setItem(i, 1, QTableWidgetItem(match[0]))
+  #             asset_manager.load_painting(name, match[0])
+
+
+moved_files = movFile()
 for filename in moved_files:
-    print(filename)
-    outputPng(filename)
-
+    importPng(outputPng(filename))
