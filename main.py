@@ -3,27 +3,51 @@ import pprint
 from src.AssetManager import AssetManager
 from src.DecodeHelper import DecodeHelper
 from src.EncodeHelper import EncodeHelper
+import shutil
 
 
-file = 'test/dafeng'
-
-asset_manager = AssetManager()
-decoder = DecodeHelper(asset_manager)
-encoder = EncodeHelper(asset_manager)
-
-asset_manager.analyze(file)
-print(asset_manager.metas)
-print("[INFO] Dependencies:", asset_manager.deps)
-num_deps = len(asset_manager.deps)
-for i, x in enumerate(asset_manager.deps):
-    path = os.path.join(os.path.dirname(file) + "/", x)
+def outputPng(file:str):
+    __src_dir = file
+    filename = os.path.basename(__src_dir)
+    __dst_dir = f'test/output/{filename}'
+    os.makedirs(__dst_dir, exist_ok=True)
+    asset_manager = AssetManager()
+    decoder = DecodeHelper(asset_manager)
+    encoder = EncodeHelper(asset_manager)
+    asset_manager.analyze(__src_dir)
+    print(asset_manager.metas)
+    print("[INFO] Dependencies:", asset_manager.deps)
+    num_deps = len(asset_manager.deps)
+    for i, x in enumerate(asset_manager.deps):
+        path = os.path.join(os.path.dirname(__src_dir) + "/", x)
+        if os.path.exists(path):
+            print("[INFO] Discovered:", path)
+            asset_manager.extract(x, path)
+    paintingface = "paintingface/" + os.path.basename(__src_dir).strip("_n")
+    path = os.path.join(os.path.dirname(__src_dir) + "/", paintingface)
     if os.path.exists(path):
-        print("[INFO] Discovered:", path)
-        asset_manager.extract(x, path)
+        asset_manager.extract(x, path, True)
+    decoder.exec(__dst_dir + "/")
+def movFile():
+  __src_dir = 'test/painting'
+  __dst_dir = 'test'
+  moved_files = []
+  for filename in os.listdir(__src_dir):
+    # Check if the file name does not end with '_hx' or 'tex'
+    if not filename.endswith('_hx') and not filename.endswith('tex'):
+        # Construct the full path to the source and destination files
+        print(filename)
+        src_path = os.path.join(__src_dir, filename)
+        dst_path = os.path.join(__dst_dir, filename)
 
-paintingface = "paintingface/" + os.path.basename(file).strip("_n")
-path = os.path.join(os.path.dirname(file) + "/", paintingface)
-if os.path.exists(path):
-    asset_manager.extract(x, path, True)
-dir='test/output'
-decoder.exec(dir + "/")
+        # Move the file from the source to the destination
+        shutil.copy(src_path, dst_path)
+        moved_files.append(dst_path)
+  return moved_files
+
+
+moved_files=movFile()
+for filename in moved_files:
+    print(filename)
+    outputPng(filename)
+
