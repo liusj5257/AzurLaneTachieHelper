@@ -37,6 +37,16 @@ class DecodeHelper(TextureHelper):
         ]
         psd = nested_layers.nested_layers_to_psd(layers, color_mode=ColorMode.rgb)
         path = os.path.join(dir, self.name + ".psd")
+        for layer in layers:
+            for sublayer in layer.layers:
+                a = sublayer.channels[-1]
+                r = sublayer.channels[0]
+                g = sublayer.channels[1]
+                b = sublayer.channels[2]
+                data = np.dstack((r, g, b, a))
+                img = Image.fromarray(data, mode='RGBA')
+                img.save(os.path.join(dir, sublayer.name + '.png'))
+
         with open(path, "wb") as f:
             psd.write(f)
 
