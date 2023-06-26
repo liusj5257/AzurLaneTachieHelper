@@ -48,7 +48,8 @@ def movFile():
         moved_files.append(dst_path)
   return moved_files
 
-def importPng(src):
+
+def importPainting(src):
   paintingSrc = src+'/painting'
   paintingFiles = []
   for file in os.listdir(paintingSrc):
@@ -56,15 +57,25 @@ def importPng(src):
   if paintingFiles:
     print("[INFO] Paintings:")
     [print("      ", _) for _ in paintingFiles]
+    for paintingFile in paintingFiles:
+      if len(paintingFiles) > 0:
+        asset_manager.load_painting(
+            os.path.splitext(os.path.basename(path))[0], paintingFiles[0])
 
-  #     for i in range(num_deps):
-  #         name = raw_name(tReplacer.item(i, 0).text()).lower()
-  #         match = [_ for _ in paintingFiles if name in _]
-  #         if len(match) > 0:
-  #             tReplacer.setItem(i, 1, QTableWidgetItem(match[0]))
-  #             asset_manager.load_painting(name, match[0])
+
+def importFace(src):
+   dir=src+'/face'
+   if dir:
+      print("[INFO] Paintingface folder:", dir)
+      print("[INFO] Paintingfaces:")
+      asset_manager.load_face(dir)
+
+
 
 
 moved_files = movFile()
 for filename in moved_files:
-    importPng(outputPng(filename))
+    path=outputPng(filename)
+    importPainting(path)
+    importFace(path)
+    path = encoder.exec('test' + "/")
