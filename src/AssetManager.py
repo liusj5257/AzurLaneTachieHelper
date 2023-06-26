@@ -53,6 +53,7 @@ class AssetManager:
         abs: list[AssetBundle] = filter_env(env, AssetBundle)
         for dep in abs[0].m_Dependencies:
             path = os.path.join(os.path.dirname(file) + "/", dep)
+            print("Dependency path:",path)
             assert os.path.exists(path), f"Dependency not found: {dep}"
             self.deps[dep] = path
             env.load_file(path)

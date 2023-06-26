@@ -10,25 +10,17 @@ decoder = DecodeHelper(asset_manager)
 encoder = EncodeHelper(asset_manager)
 num_deps = len(asset_manager.deps)
 
-def outputPng(file:str):
+def openMetadata(file:str):
     __src_dir = file
     filename = os.path.basename(__src_dir)
     __dst_dir = f'test/output/{filename}'
     os.makedirs(__dst_dir, exist_ok=True)
 
     asset_manager.analyze(__src_dir)
-    print(asset_manager.metas)
-    print("[INFO] Dependencies:", asset_manager.deps)
-    num_deps = len(asset_manager.deps)
-    for i, x in enumerate(asset_manager.deps):
-        path = os.path.join(os.path.dirname(__src_dir) + "/", x)
-        if os.path.exists(path):
-            print("[INFO] Discovered:", path)
-            asset_manager.extract(x, path)
-    paintingface = "paintingface/" + os.path.basename(__src_dir).strip("_n")
-    path = os.path.join(os.path.dirname(__src_dir) + "/", paintingface)
-    if os.path.exists(path):
-        asset_manager.extract(x, path, True)
+    print("[INFO] Metadata:", __src_dir)
+    print("[INFO] Dependencies:", [asset_manager.deps.keys()])
+
+
     decoder.exec(__dst_dir + "/")
     return __dst_dir
 def movFile():
@@ -71,11 +63,13 @@ def importFace(src):
       asset_manager.load_face(dir)
 
 
+# path = openMetadata('test/dafeng_h_n')
 
 
 moved_files = movFile()
+
 for filename in moved_files:
-    path=outputPng(filename)
+    path=openMetadata(filename)
     importPainting(path)
     importFace(path)
     path = encoder.exec('test' + "/")
