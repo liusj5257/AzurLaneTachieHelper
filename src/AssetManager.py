@@ -53,7 +53,7 @@ class AssetManager:
         abs: list[AssetBundle] = filter_env(env, AssetBundle)
         for dep in abs[0].m_Dependencies:
             path = os.path.join(os.path.dirname(file) + "/", dep)
-            print("Dependency path:",path)
+            # print("Dependency path:",path)
             assert os.path.exists(path), f"Dependency not found: {dep}"
             self.deps[dep] = path
             env.load_file(path)
@@ -87,7 +87,7 @@ class AssetManager:
         else:
             self.deps[face] = None
 
-        [print(_) for _ in self.layers.values()]
+        # [print(_) for _ in self.layers.values()]
 
     def load_painting(self, name: str, path: str):
         x, y = self.layers[name].offset
@@ -103,6 +103,6 @@ class AssetManager:
             for img in [_ for _ in files if _.endswith(".png")]:
                 name = img.split(".png")[0]
                 if name in self.faces:
-                    print("      ", os.path.join(path + "/", img))
+                    # print("      ", os.path.join(path + "/", img))
                     full = read_img(os.path.join(path, img))
                     self.repls |= {name: full.crop((x, y, x + w, y + h))}
