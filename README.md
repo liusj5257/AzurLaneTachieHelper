@@ -1,9 +1,9 @@
 ### 碧蓝航线立绘助手 AzurLaneTachieHelper
-
+adb push  ./AssetBundles /sdcard/Android/data/com.bilibili.azurlane/files/
 #### Features
 
 - Unpack & pack painting
-- Merge & split paintingface 
+- Merge & split paintingface
 - Support multi-layers
 - Dump into photoshop document (i.e. psd)
 

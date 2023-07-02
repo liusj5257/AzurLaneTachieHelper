@@ -16,12 +16,13 @@ for file in os.listdir("loadingbg"):
         name = sprite.name
         img: Image.Image = sprite.image
         if k.startswith("assets/artresource/atlas/loadingbg/"):
-            target = os.path.join(outdir, f"{name}_hx.png")
+            target = os.path.join(outdir, f"{name}_h.png")
         elif k.startswith("assets/rescategories/fanhx/artresource/atlas/loadingbg/"):
             target = os.path.join(outdir, f"{name}.png")
         elif k.startswith("assets/rescategories/jp/artresource/atlas/loadingbg/"):
             target = os.path.join(outdir, f"{name}_jp.png")
         else:
-            raise ValueError(k)
+            print (k)
+            # raise ValueError(k)
         print("[INFO] Dumping:", target)
         img.save(target)
