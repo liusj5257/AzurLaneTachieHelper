@@ -19,6 +19,8 @@ for file in os.listdir("loadingbg"):
             target = os.path.join(outdir, f"{name}_hx.png")
         elif k.startswith("assets/rescategories/fanhx/artresource/atlas/loadingbg/"):
             target = os.path.join(outdir, f"{name}.png")
+        elif k.startswith("assets/rescategories/jp/artresource/atlas/loadingbg/"):
+            target = os.path.join(outdir, f"{name}_jp.png")
         else:
             raise ValueError(k)
         print("[INFO] Dumping:", target)
