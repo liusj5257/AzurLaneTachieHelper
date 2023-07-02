@@ -12,6 +12,7 @@ spine
 *.txt
 char.py
 gametip.py
+AssetBundles
 ship_skin_words.py
 AzurLaneTachieHelper
 test
