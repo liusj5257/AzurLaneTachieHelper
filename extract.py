@@ -28,3 +28,5 @@ def extract(src='loadingbg', outdir='loadingbg_img'):
                 # raise ValueError(k)
             print("[INFO] Dumping:", target)
             img.save(target)
+
+extract()

@@ -84,7 +84,7 @@ def single(filename, dst='D:/ClientExtract/CN/painting'):
     print('Done:', path)
 
 
-def mult(src='C:/Users/LIU-S/Desktop/apk/AzurLaneTools/Assets/ClientAssets/CN/AssetBundles/painting', dst='D:/ClientExtract/CN/painting'):
+def mult(src='../AzurLaneTools/Assets/ClientAssets/CN/AssetBundles/painting', dst='AssetBundles/painting'):
     moved_files = movFile(src)
     with mp.Pool(processes=mp.cpu_count()-1) as pool:
         for filename in moved_files:
