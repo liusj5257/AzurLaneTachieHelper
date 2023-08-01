@@ -28,8 +28,8 @@ class AssetManager:
     def init(self):
         self.meta: str = None
         self.name: str = None
-        self.size: str = None
-        self.bias: tuple[int, int] = None
+        self.size: tuple[int, int] = None
+        self.bias: tuple[float, float] = None
         self.deps: dict[str, str] = {}
         self.layers: dict[str, Layer] = {}
         self.faces: dict[int, Image.Image] = {}
@@ -51,7 +51,16 @@ class AssetManager:
 
         face = "paintingface/" + os.path.basename(file).strip("_n")
         path = os.path.join(os.path.dirname(file) + "/", face)
-        self.deps[face] = path if os.path.exists(path) else None
+        if os.path.exists(path):
+            self.deps[face] = path
+            env.load_file(path)
+            self.faces |= {
+                eval(_.name): _.image.transpose(Image.FLIP_TOP_BOTTOM)
+                for _ in filter_env(env, Texture2D)
+                if re.match(r"^0|([1-9][0-9]*)$", _.name)
+            }
+        else:
+            self.deps[face] = None
 
         print("[INFO] Dependencies:")
         [print("      ", _) for _ in self.deps.keys()]
@@ -59,29 +68,14 @@ class AssetManager:
         base_go: GameObject = list(env.container.values())[0].read()
         base_rt: RectTransform = base_go.m_Transform.read()
         base_layer = Layer(base_rt)
-        self.layers[base_layer.name] = base_layer
 
         self.name = base_layer.name
 
-        for layers_rt in rt_filter_child(base_rt, "layers"):
-            layers_layer = Layer(layers_rt, base_layer)
-            for child_rt in [_.read() for _ in layers_rt.m_Children]:
-                child_layer = Layer(child_rt, layers_layer)
-                self.layers[child_layer.name] = child_layer
-
-        if self.deps[face] is not None:
-            env = UnityPy.load(path)
-            for face_rt in rt_filter_child(base_rt, "face"):
-                self.layers["face"] = Layer(face_rt, base_layer)
-                self.faces |= {
-                    eval(_.name): _.image.transpose(Image.FLIP_TOP_BOTTOM)
-                    for _ in filter_env(env, Texture2D)
-                    if re.match(r"^0|([1-9][0-9]*)", _.name)
-                }
+        self.layers = base_layer.flatten() | {"face": base_layer.get_child("face")}
 
         x_min, y_min = np.min([_.posMin for _ in self.layers.values()], 0)
         x_max, y_max = np.max([_.posMax for _ in self.layers.values()], 0)
-        self.size = (x_max - x_min, y_max - y_min)
+        self.size = (round(x_max - x_min + 1), round(y_max - y_min + 1))
         self.bias = (-x_min, -y_min)
 
         # [print(_) for _ in self.layers.values()]
@@ -91,41 +85,18 @@ class AssetManager:
             print("      ", path)
             x, y = np.add(self.layers[name].posMin, self.bias)
             w, h = self.layers[name].sizeDelta
-            box = min(x + w, self.size[0]), min(y + h, self.size[1])
-            sub = Image.new("RGBA", (w, h))
-            sub.paste(read_img(path).crop((x, y, *box)))
+            sub = read_img(path).crop((x, y, x + w, y + h))
             self.repls[name] = sub.resize(self.layers[name].rawSpriteSize)
 
         tasks = [threading.Thread(target=load, args=(k, v)) for k, v in workload.items()]
         [_.start() for _ in tasks]
         [_.join() for _ in tasks]
 
-    def load_faces(self, dir: str):
-        def load(name: str, path: str):
+    def load_faces(self, workload: dict[int, str]):
+        def load(name: int, path: str):
             print("      ", path)
-            x, y = np.add(self.layers["face"].posMin, self.bias)
-            w, h = self.layers["face"].sizeDelta
-            img = read_img(path)
-            if "+" in name:
-                full = img
-            else:
-                rgb = Image.new("RGBA", img.size)
-                rgb.paste(img.crop((x, y, x + w + 1, y + h + 1)), (x, y))
-                r, g, b, _ = rgb.split()
+            self.repls[name] = read_img(path)
 
-                alpha = Image.new("RGBA", img.size)
-                alpha.paste(img.crop((x + 1, y + 1, x + w, y + h)), (x + 1, y + 1))
-                _, _, _, a = alpha.split()
-
-                full = Image.merge("RGBA", [r, g, b, a])
-            self.repls[eval(name.strip("+-"))] = full
-
-        for path, _, files in os.walk(dir):
-            imgs = {os.path.splitext(_)[0]: os.path.join(path, _) for _ in files}
-            tasks = [
-                threading.Thread(target=load, args=(k, v))
-                for k, v in imgs.items()
-                if re.match(r"^0|([1-9][0-9]*)", k)
-            ]
-            [_.start() for _ in tasks]
-            [_.join() for _ in tasks]
+        tasks = [threading.Thread(target=load, args=(k, v)) for k, v in workload.items()]
+        [_.start() for _ in tasks]
+        [_.join() for _ in tasks]
