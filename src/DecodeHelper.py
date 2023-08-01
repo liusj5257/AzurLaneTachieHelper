@@ -9,21 +9,21 @@ from .TextureHelper import TextureHelper
 
 
 class DecodeHelper(TextureHelper):
-    def exec(self, dir: str):
+    def exec(self, dir: str) -> str:
         painting = []
         for k, v in self.layers.items():
             if k != "face":
                 sub = self.decode(v.mesh, v.tex, v.rawSpriteSize)
                 full = Image.new("RGBA", self.size)
-                full.paste(sub.resize(v.sizeDelta, Image.Resampling.LANCZOS), v.offset)
+                x, y = np.add(v.posMin, self.bias)
+                full.paste(sub.resize(v.sizeDelta), (x, y))
                 painting += [self.ps_layer(full, k)]
-
         face = []
         for k, v in sorted(self.faces.items()):
             full = Image.new("RGBA", self.size)
-            full.paste(v, self.face_layer.offset)
-            face += [self.ps_layer(full, k, False)]
-
+            x, y = np.add(self.face_layer.posMin, self.bias)
+            full.paste(v, (x, y))
+            face += [self.ps_layer(full, str(k), False)]
         layers = [
             nested_layers.Group(name="paintingface", layers=face, closed=False),
             nested_layers.Group(name="painting", layers=painting[::-1], closed=False),
@@ -48,13 +48,12 @@ class DecodeHelper(TextureHelper):
             img = Image.fromarray(data, mode='RGBA')
             os.makedirs(dir+'painting', exist_ok=True)
             img.save(os.path.join(dir+'painting', layer.name + '.png'))
-
         with open(path, "wb") as f:
             psd.write(f)
-
+        print(path)
         return path
 
-    def decode(self, mesh: dict, enc: Image.Image, rss: tuple) -> Image.Image:
+    def decode(self, mesh: dict, enc: Image.Image, rss: tuple[int, int]) -> Image.Image:
         dec = Image.new("RGBA", rss)
 
         v, vt, f = mesh.values()
