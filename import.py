@@ -39,6 +39,7 @@ def exec(ab: str, tex_fmt: TextureFormat):
                 if sprite is not None:
                     sprite.m_Rect.width, sprite.m_Rect.height = img.size
                     sprite.m_RD.textureRect.width, sprite.m_RD.textureRect.height = img.size
+                    sprite.m_PixelsToUnits=200
                     sprite.save()
                 tex2d.m_Width, tex2d.m_Height = img.size
                 tex2d.set_image(img, target_format=tex_fmt)
