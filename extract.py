@@ -29,4 +29,4 @@ def extract(src='loadingbg', outdir='loadingbg_img'):
             print("[INFO] Dumping:", target)
             img.save(target)
 
-extract()
+# extract()
